@@ -10,13 +10,26 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class WebServer {
-    private static final HashMap<String,String> contentType =new HashMap<String,String>();
-    public static void main(String[] args) throws IOException {
-//        out.close();
-//        in.close();
-//         clientSocket.close();
+public class HttpServer {
+    private static final HttpServer _instance = new HttpServer();
+    private static final HashMap<String,String> contentType = new HashMap<String,String>();
 
+    private HttpServer() {
+    }
+
+    public static void main(String[] args) throws IOException {
+        HttpServer.getInstance().starServer();
+    }
+
+    public static HttpServer getInstance(){
+        contentType.put("html","text/html");
+        contentType.put("css","text/css");
+        contentType.put("js","text/javascript");
+
+        contentType.put("jpg","image/jpg");
+        contentType.put("jpeg","image/jpeg");
+        contentType.put("png","image/png");
+        return _instance;
     }
 
     public void starServer() throws IOException {
@@ -52,6 +65,7 @@ public class WebServer {
 
         while ((inputLine = in.readLine()) != null) {
             System.out.println("Received: " + inputLine);
+            request.add(inputLine);
             if (!in.ready()) {
                 break;
             }
@@ -78,10 +92,54 @@ public class WebServer {
 
     public String getResource(String uri, OutputStream outStream) throws URISyntaxException{
         if (uri.contains("jpg") || uri.contains("jpeg")){
-            return null;
+            return computeImageResponse(uri, outStream);
         }else {
-            return null;
+            return computeContentResponse(uri);
         }
+    }
+
+    public String computeImageResponse(String uriImgType, OutputStream outStream){
+        uriImgType=uriImgType.replace("/img","");
+
+        String extensionUri = uriImgType.substring(uriImgType.lastIndexOf(".") + 1);
+
+        String content = "HTTP/1.1 200 OK \r\n"
+                + "Content-Type: "+ contentType.get(extensionUri) + "\r\n"
+                + "\r\n";
+        System.out.println("uriImgType " + uriImgType);
+        File file = new File("src/retos/R1/resources/img/"+uriImgType);
+        System.out.println("file "+file);
+        try {
+            BufferedImage bi = ImageIO.read(file);
+            ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+            DataOutputStream dataOutputStream= new DataOutputStream(outStream);
+            ImageIO.write(bi, extensionUri, byteArrayOutputStream);
+            dataOutputStream.writeBytes(content);
+            dataOutputStream.write(byteArrayOutputStream.toByteArray());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content;
+    }
+
+    public String computeContentResponse(String uriContentType){
+        String extensionUri = uriContentType.substring(uriContentType.lastIndexOf(".") + 1);
+        String content = "HTTP/1.1 200 OK \r\n"
+                + "Content-Type: "+ contentType.get(extensionUri) + "\r\n"
+                + "\r\n";
+        File file = new File("src/retos/R1/resources/"+uriContentType);
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while((line =  br.readLine()) != null) content += line;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content;
     }
 
     private String defaultResponse(){
