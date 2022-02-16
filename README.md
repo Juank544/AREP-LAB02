@@ -1,6 +1,6 @@
 # Clientes y Servicios
 
-Este laboratorio presenta diferentes retos que loa ayudaran a explorar los conceptos de esquemas de nombres y de clientes y servicios. Adicionalmente, el taller le ayudará a explorar la arquitectura de las aplicaciones distribuidas sobre internet.
+Este laboratorio presenta diferentes retos que lo ayudaran a explorar los conceptos de esquemas de nombres y de clientes y servicios. Adicionalmente, el taller le ayudará a explorar la arquitectura de las aplicaciones distribuidas sobre internet.
 
 ## Getting Started
 
